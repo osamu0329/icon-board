@@ -290,10 +290,11 @@
                     mode: 'no-cors',
                     body: JSON.stringify({ action: 'delete', date: date })
                 });
-                alert("削除リクエストを送信しました。少しお待ちください。");
+                alert("削除リクエストを送信しました。少しだけお待ちください。");
                 setTimeout(fetchPosts, 1500);
             } catch (e) { alert("削除に失敗しました"); }
         }
     </script>
 </body>
+
 </html>
