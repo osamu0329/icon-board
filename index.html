@@ -118,6 +118,34 @@
         .post-list-header { text-align: center; margin-top: 10px; }
         .post-list-header h3 { font-size: 1.8rem; color: var(--pink-dark); margin: 0; text-shadow: 2px 2px 0px white; }
 
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: var(--pink-main);
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px auto;
+            padding: 5px 10px;
+            border-radius: 20px;
+            transition: background 0.3s;
+        }
+        .refresh-btn:hover { background: rgba(255, 128, 171, 0.1); }
+        .refresh-btn:disabled { color: #ccc; cursor: not-allowed; }
+        
+        /* 回転アニメーション */
+        .spin {
+            display: inline-block;
+            animation: rotate 1s linear infinite;
+        }
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .post-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
 
         .post-item {
@@ -216,7 +244,9 @@
 
         <div class="post-list-header">
             <h3>✨ みんなのボード ✨</h3>
-            <button style="background:none; border:none; color:var(--pink-main); cursor:pointer; font-size:0.8rem;" onclick="fetchPosts()">再読み込み ↻</button>
+            <button id="refreshBtn" class="refresh-btn" onclick="fetchPosts()">
+                <span id="refreshIcon">↻</span> <span id="refreshText">再読み込み</span>
+            </button>
         </div>
 
         <div id="postList" class="post-grid">
@@ -267,39 +297,60 @@
 
         async function fetchPosts() {
             if (!GAS_WEB_APP_URL) return;
+
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshIcon = document.getElementById('refreshIcon');
+            const refreshText = document.getElementById('refreshText');
+
+            // ローディング状態開始
+            refreshBtn.disabled = true;
+            refreshIcon.classList.add('spin');
+            refreshText.innerText = '読み込み中...';
+
             try {
                 const res = await fetch(GAS_WEB_APP_URL);
                 const posts = await res.json();
                 const list = document.getElementById('postList');
                 list.innerHTML = '';
                 
-                [...posts].reverse().forEach(post => {
-                    const div = document.createElement('div');
-                    div.className = 'post-item';
-                    
-                    let images = [];
-                    try {
-                        images = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
-                    } catch(e) { console.error(e); }
+                if (posts.length === 0) {
+                    list.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">まだ投稿がありません</div>';
+                } else {
+                    [...posts].reverse().forEach(post => {
+                        const div = document.createElement('div');
+                        div.className = 'post-item';
+                        
+                        let images = [];
+                        try {
+                            images = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
+                        } catch(e) { console.error(e); }
 
-                    const dateStr = post.date ? new Date(post.date).toLocaleString() : '';
-                    
-                    div.innerHTML = `
-                        <div class="post-header">
-                            <span class="post-name">${post.name || 'ななしさん'}</span>
-                            <div class="post-info">
-                                <span class="post-date">${dateStr}</span>
-                                <button class="delete-btn" onclick="deletePost('${post.id}')">削除 🗑️</button>
+                        const dateStr = post.date ? new Date(post.date).toLocaleString() : '';
+                        
+                        div.innerHTML = `
+                            <div class="post-header">
+                                <span class="post-name">${post.name || 'ななしさん'}</span>
+                                <div class="post-info">
+                                    <span class="post-date">${dateStr}</span>
+                                    <button class="delete-btn" onclick="deletePost('${post.id}')">削除 🗑️</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="icons-wrapper">
-                            ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large">`).join('')}
-                        </div>
-                    `;
-                    list.appendChild(div);
-                });
+                            <div class="icons-wrapper">
+                                ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large">`).join('')}
+                            </div>
+                        `;
+                        list.appendChild(div);
+                    });
+                }
             } catch (e) { 
                 console.error(e); 
+                const list = document.getElementById('postList');
+                list.innerHTML = '<div style="text-align:center; color:red; padding:20px;">読み込みに失敗しました</div>';
+            } finally {
+                // ローディング状態解除
+                refreshBtn.disabled = false;
+                refreshIcon.classList.remove('spin');
+                refreshText.innerText = '再読み込み';
             }
         }
 
