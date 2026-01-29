@@ -226,20 +226,20 @@
 
     <script>
         // --- 設定：GASのURLをここに貼り付けてください ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhQvZvsWvr0YgC3EXhQlOKxUWT-1Kog7YYQWcZd04Iy2Bn5_tpYdlndcqNu0p0bIAM/exec"; 
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzKtK4jckh3vSCxhYHpfb5tZzEZ11nqraIAzHpzffckULtysONXfP3bGbfPapeo4s9X/exec"; 
 
         let selectedImages = [];
 
         window.onload = fetchPosts;
 
+        // 画像の圧縮とリサイズ
         async function resizeImage(file) {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (e) => {
                     const img = new Image();
                     img.src = e.target.result;
-                    img.onerror = () => reject("画像の読み込みに失敗しました");
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         const MAX_WIDTH = 200;
@@ -258,33 +258,21 @@
             selectedImages = [];
             const files = Array.from(e.target.files).slice(0, 5);
             for (const file of files) {
-                try {
-                    const base64 = await resizeImage(file);
-                    selectedImages.push(base64);
-                } catch(err) {
-                    console.error(err);
-                }
+                const base64 = await resizeImage(file);
+                selectedImages.push(base64);
             }
             const preview = document.getElementById('previewArea');
             preview.innerHTML = selectedImages.map(src => `<img src="${src}" class="preview-mini">`).join('');
         });
 
         async function fetchPosts() {
-            if (!GAS_WEB_APP_URL) {
-                document.getElementById('loadingMessage').innerHTML = '<span style="color:red">URLが設定されていません</span>';
-                return;
-            }
+            if (!GAS_WEB_APP_URL) return;
             try {
                 const res = await fetch(GAS_WEB_APP_URL);
                 const posts = await res.json();
                 const list = document.getElementById('postList');
                 list.innerHTML = '';
                 
-                if (posts.length === 0) {
-                    list.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">まだ投稿がありません</div>';
-                    return;
-                }
-
                 [...posts].reverse().forEach(post => {
                     const div = document.createElement('div');
                     div.className = 'post-item';
@@ -292,7 +280,7 @@
                     let images = [];
                     try {
                         images = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
-                    } catch(e) { console.error("画像パースエラー:", e); }
+                    } catch(e) { console.error(e); }
 
                     const dateStr = post.date ? new Date(post.date).toLocaleString() : '';
                     
@@ -301,25 +289,23 @@
                             <span class="post-name">${post.name || 'ななしさん'}</span>
                             <div class="post-info">
                                 <span class="post-date">${dateStr}</span>
-                                <button class="delete-btn" onclick="deletePost('${post.date}')">削除 🗑️</button>
+                                <button class="delete-btn" onclick="deletePost('${post.id}')">削除 🗑️</button>
                             </div>
                         </div>
                         <div class="icons-wrapper">
-                            ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large" onerror="this.src='https://via.placeholder.com/80?text=Error'">`).join('')}
+                            ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large">`).join('')}
                         </div>
                     `;
                     list.appendChild(div);
                 });
             } catch (e) { 
-                console.error("取得エラー:", e);
-                document.getElementById('loadingMessage').innerHTML = '<span style="color:red">データの読み込みに失敗しました。GASの設定を確認してください。</span>';
+                console.error(e); 
             }
         }
 
         async function addPost() {
             const name = document.getElementById('userName').value;
             if (!name || !selectedImages.length) return alert("名前と画像を選んでね！");
-            if (!GAS_WEB_APP_URL) return alert("GASのURLが設定されていません");
             
             const btn = document.getElementById('submitBtn');
             const loader = document.getElementById('btnLoader');
@@ -332,36 +318,33 @@
                     mode: 'no-cors',
                     body: JSON.stringify({ name, images: JSON.stringify(selectedImages) })
                 });
-                // no-cors のため成功したか判定できないので少し待ってリロード
                 setTimeout(() => {
                     location.reload();
-                }, 2000);
+                }, 1500);
             } catch (e) { 
-                console.error("送信エラー:", e);
                 alert("送信に失敗しました");
                 btn.disabled = false;
                 loader.classList.add('hidden');
             }
         }
 
-        async function deletePost(date) {
-            if (!GAS_WEB_APP_URL) return alert("GASのURLが設定されていません");
+        async function deletePost(id) {
+            if (!id || id === "undefined") {
+                alert("この投稿はIDがないため削除できません。新しい投稿から試してください。");
+                return;
+            }
             if (!confirm("この投稿を削除してもいいですか？")) return;
             
             try {
                 await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    body: JSON.stringify({ action: 'delete', date: date })
+                    body: JSON.stringify({ action: 'delete', id: id })
                 });
-                alert("削除依頼を送信しました。1〜2秒後に自動更新します。");
-                setTimeout(fetchPosts, 2000);
-            } catch (e) { 
-                console.error("削除エラー:", e);
-                alert("削除に失敗しました"); 
-            }
+                alert("削除リクエストを送信しました！");
+                setTimeout(fetchPosts, 1500);
+            } catch (e) { alert("削除に失敗しました"); }
         }
     </script>
 </body>
 </html>
-
