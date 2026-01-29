@@ -19,7 +19,7 @@
             background: var(--gradient);
             background-attachment: fixed;
             margin: 0;
-            padding: 10px; /* スマホ用に少し狭める */
+            padding: 10px;
             color: #444;
             display: flex;
             justify-content: center;
@@ -42,7 +42,7 @@
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             display: flex;
-            flex-direction: column; /* スマホ重視で縦並び */
+            flex-direction: column;
             align-items: center;
             gap: 15px;
             position: sticky;
@@ -52,7 +52,7 @@
 
         @media (max-width: 600px) {
             .upload-section {
-                position: static; /* スマホでは画面を広く使うため固定解除 */
+                position: static;
                 padding: 15px;
             }
         }
@@ -68,6 +68,10 @@
             flex-direction: column;
             gap: 12px;
             width: 100%;
+        }
+
+        @media (min-width: 600px) {
+            .form-group { flex-direction: row; }
         }
 
         input[type="text"] {
@@ -95,7 +99,7 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
-            width: 100%; /* スマホで押しやすく */
+            width: 100%;
             max-width: 300px;
         }
 
@@ -149,16 +153,18 @@
             margin-top: 5px;
             transition: 0.2s;
         }
+        .delete-btn:hover { background: #ef5350; color: white; }
 
         .icons-wrapper { 
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* 画面幅に合わせて自動調整 */
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 15px;
             justify-items: center;
+            padding: 10px 0;
         }
         
         .icon-large {
-            width: 80px; /* デフォルトを少し小さめに */
+            width: 80px;
             height: 80px; 
             max-width: 100%;
             border-radius: 50%; 
@@ -167,17 +173,18 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
             cursor: pointer;
+            position: relative;
             z-index: 1;
         }
 
         @media (min-width: 600px) {
             .icon-large { width: 120px; height: 120px; }
             .post-item { padding: 25px 35px; }
-            .form-group { flex-direction: row; }
         }
 
+        /* マウスオーバーで拡大 */
         .icon-large:hover {
-            transform: scale(1.2); 
+            transform: scale(1.3); 
             box-shadow: 0 10px 25px rgba(255, 128, 171, 0.4);
             z-index: 10;
         }
@@ -209,6 +216,7 @@
 
         <div class="post-list-header">
             <h3>✨ みんなのボード ✨</h3>
+            <button style="background:none; border:none; color:var(--pink-main); cursor:pointer; font-size:0.8rem;" onclick="fetchPosts()">再読み込み ↻</button>
         </div>
 
         <div id="postList" class="post-grid">
@@ -217,12 +225,14 @@
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = ""; 
+        // --- 設定：GASのURLをここに貼り付けてください ---
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxF39aHLGPITeS6HHdRogsGy35okUOBo6zWjp85w3WlRF9eOWIyUqFj6rckozPFWeg/exec"; 
 
         let selectedImages = [];
 
         window.onload = fetchPosts;
 
+        // 画像の圧縮とリサイズ
         async function resizeImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -238,6 +248,7 @@
                         canvas.height = img.height * scale;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        // 5万字制限対策のため画質を0.6に
                         resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
@@ -265,26 +276,30 @@
                 [...posts].reverse().forEach(post => {
                     const div = document.createElement('div');
                     div.className = 'post-item';
-                    const images = JSON.parse(post.images || "[]");
-                    const dateStr = new Date(post.date).toLocaleString();
+                    
+                    let images = [];
+                    try {
+                        images = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
+                    } catch(e) { console.error(e); }
+
+                    const dateStr = post.date ? new Date(post.date).toLocaleString() : '';
                     
                     div.innerHTML = `
                         <div class="post-header">
-                            <span class="post-name">${post.name}</span>
+                            <span class="post-name">${post.name || 'ななしさん'}</span>
                             <div class="post-info">
                                 <span class="post-date">${dateStr}</span>
                                 <button class="delete-btn" onclick="deletePost('${post.date}')">削除 🗑️</button>
                             </div>
                         </div>
                         <div class="icons-wrapper">
-                            ${images.map(img => `<img src="${img}" class="icon-large">`).join('')}
+                            ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large">`).join('')}
                         </div>
                     `;
                     list.appendChild(div);
                 });
             } catch (e) { 
                 console.error(e); 
-                document.getElementById('postList').innerHTML = '<div style="text-align:center; color:red; padding:20px;">データの取得に失敗しました</div>';
             }
         }
 
@@ -305,7 +320,7 @@
                 });
                 setTimeout(() => {
                     location.reload();
-                }, 1000);
+                }, 1500);
             } catch (e) { 
                 alert("送信に失敗しました");
                 btn.disabled = false;
