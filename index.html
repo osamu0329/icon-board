@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <!-- 文字コードとビューポートの設定 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>みんなのアイコンボード</title>
     <style>
+        /* カラー変数と全体的なデザイン設定 */
         :root {
-            --pink-main: #ff80ab;
-            --pink-light: #fff5f7;
-            --pink-border: #ffdae0;
-            --pink-dark: #d81b60;
-            --white: #ffffff;
-            --gradient: linear-gradient(135deg, #fff5f7 0%, #f3e5f5 100%);
+            --pink-main: #ff80ab;      /* メインのピンク色 */
+            --pink-light: #fff5f7;     /* 背景用の薄いピンク */
+            --pink-border: #ffdae0;    /* 枠線用のピンク */
+            --pink-dark: #d81b60;      /* 強調・文字用の濃いピンク */
+            --white: #ffffff;          /* 白色 */
+            --gradient: linear-gradient(135deg, #fff5f7 0%, #f3e5f5 100%); /* 背景のグラデーション */
         }
 
+        /* 全体のレイアウト設定 */
         body {
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
             background: var(--gradient);
@@ -25,6 +28,7 @@
             justify-content: center;
         }
 
+        /* コンテンツ幅の制限 */
         .container {
             width: 100%;
             max-width: 900px;
@@ -33,10 +37,10 @@
             gap: 20px;
         }
 
-        /* 投稿フォーム */
+        /* 投稿フォームのスタイル */
         .upload-section {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9); /* 半透明の白背景 */
+            backdrop-filter: blur(10px);        /* 背景のぼかし効果 */
             border: 2px solid var(--pink-border);
             border-radius: 20px;
             padding: 20px;
@@ -45,14 +49,15 @@
             flex-direction: column;
             align-items: center;
             gap: 15px;
-            position: sticky;
+            position: sticky;                  /* 画面上部に固定 */
             top: 10px;
             z-index: 100;
         }
 
+        /* スマホ向けのフォーム設定 */
         @media (max-width: 600px) {
             .upload-section {
-                position: static;
+                position: static;             /* スマホでは固定を解除 */
                 padding: 15px;
             }
         }
@@ -63,6 +68,7 @@
             margin: 0;
         }
 
+        /* 入力項目のグループ化 */
         .form-group {
             display: flex;
             flex-direction: column;
@@ -70,10 +76,12 @@
             width: 100%;
         }
 
+        /* PCでは横並びに設定 */
         @media (min-width: 600px) {
             .form-group { flex-direction: row; }
         }
 
+        /* テキスト入力欄のスタイル */
         input[type="text"] {
             width: 100%;
             box-sizing: border-box;
@@ -84,11 +92,13 @@
             font-size: 1rem;
         }
 
+        /* ファイル選択ボタンのスタイル */
         .file-custom {
             width: 100%;
             font-size: 0.9rem;
         }
 
+        /* 送信ボタンの共通スタイル */
         .submit-btn {
             background-color: var(--pink-main);
             color: white;
@@ -106,18 +116,21 @@
         .submit-btn:hover:not(:disabled) { background-color: var(--pink-dark); transform: translateY(-2px); }
         .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
-        #previewArea { 
-            display: flex; 
-            gap: 8px; 
-            flex-wrap: wrap; 
-            justify-content: center; 
+        /* 選択した画像のプレビュー表示エリア */
+        #previewArea {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
+        /* 投稿前のミニプレビュー画像 */
         .preview-mini { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--white); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* 投稿一覧 */
+        /* 投稿一覧のヘッダー */
         .post-list-header { text-align: center; margin-top: 10px; }
         .post-list-header h3 { font-size: 1.8rem; color: var(--pink-dark); margin: 0; text-shadow: 2px 2px 0px white; }
 
+        /* 再読み込みボタン */
         .refresh-btn {
             background: none;
             border: none;
@@ -135,8 +148,8 @@
         }
         .refresh-btn:hover { background: rgba(255, 128, 171, 0.1); }
         .refresh-btn:disabled { color: #ccc; cursor: not-allowed; }
-        
-        /* 回転アニメーション */
+
+        /* 読み込み中の回転アニメーション */
         .spin {
             display: inline-block;
             animation: rotate 1s linear infinite;
@@ -146,8 +159,10 @@
             to { transform: rotate(360deg); }
         }
 
+        /* 投稿一覧のグリッド配置 */
         .post-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
 
+        /* 各投稿アイテムのスタイル */
         .post-item {
             background: var(--white);
             border-radius: 25px;
@@ -159,6 +174,7 @@
             position: relative;
         }
 
+        /* 投稿者名と情報の表示部分 */
         .post-header {
             display: flex;
             justify-content: space-between;
@@ -171,6 +187,7 @@
         .post-info { text-align: right; }
         .post-date { font-size: 0.7rem; color: #bbb; display: block; }
 
+        /* 削除ボタンのスタイル */
         .delete-btn {
             background: #ffebee;
             color: #ef5350;
@@ -184,21 +201,23 @@
         }
         .delete-btn:hover { background: #ef5350; color: white; }
 
-        .icons-wrapper { 
+        /* 投稿されたアイコンの配置エリア */
+        .icons-wrapper {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
             gap: 15px;
             justify-items: center;
             padding: 10px 0;
         }
-        
+
+        /* アイコン画像の共通スタイル */
         .icon-large {
             width: 80px;
-            height: 80px; 
+            height: 80px;
             max-width: 100%;
-            border-radius: 50%; 
-            object-fit: cover;
-            border: 4px solid white; 
+            border-radius: 50%;
+            object-fit: cover; /* 枠に合わせて切り抜き */
+            border: 4px solid white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
             cursor: pointer;
@@ -206,17 +225,20 @@
             z-index: 1;
         }
 
+        /* PCでのアイコンサイズ */
         @media (min-width: 600px) {
             .icon-large { width: 120px; height: 120px; }
             .post-item { padding: 25px 35px; }
         }
 
+        /* アイコンホバー時のエフェクト */
         .icon-large:hover {
-            transform: scale(1.3); 
+            transform: scale(1.3);
             box-shadow: 0 10px 25px rgba(255, 128, 171, 0.4);
             z-index: 10;
         }
 
+        /* 汎用ローディングアニメーション */
         .loader {
             border: 2px solid #f3f3f3; border-top: 2px solid var(--pink-main);
             border-radius: 50%; width: 14px; height: 14px;
@@ -224,17 +246,69 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
+
+        /* プロフィール風プレビューモーダル（全体表示用） */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); /* 半透明の暗い背景 */
+            backdrop-filter: blur(8px);    /* 背景のぼかし */
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; } /* アクティブ時の表示設定 */
+
+        /* プロフィールカード本体のスタイル */
+        .profile-card {
+            background: var(--white); width: 90%; max-width: 400px;
+            border-radius: 30px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            transform: translateY(20px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .modal-overlay.active .profile-card { transform: translateY(0); } /* 表示時のアニメーション */
+
+        /* カード上部のピンク色エリア */
+        .card-header {
+            height: 100px; background: var(--pink-main);
+            display: flex; justify-content: flex-end; padding: 15px;
+        }
+        /* モーダルを閉じるボタン */
+        .close-modal {
+            background: rgba(255,255,255,0.3); border: none; color: white;
+            width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+            font-size: 1.2rem; line-height: 1;
+        }
+        /* カード内のメインコンテンツエリア */
+        .card-content {
+            padding: 0 30px 40px; text-align: center; margin-top: -60px; /* 画像を上に重ねる */
+        }
+        /* 画像を囲む白い円形フレーム */
+        .preview-img-wrapper {
+            width: 150px; height: 150px; margin: 0 auto 20px;
+            background: white; border-radius: 50%; padding: 8px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        /* 拡大プレビュー画像本体 */
+        .preview-large {
+            width: 100%; height: 100%; border-radius: 50%;
+            object-fit: contain; /* 見切れ防止: 枠内に全体を収める */
+            background: #f9f9f9;
+        }
+        .preview-name { font-size: 1.5rem; font-weight: bold; color: var(--pink-dark); margin-bottom: 5px; }
+        .preview-status { font-size: 0.9rem; color: #888; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- 投稿用フォームエリア -->
         <div class="upload-section">
             <h2>🌸 投稿フォーム</h2>
             <div class="form-group">
                 <input type="text" id="userName" placeholder="ニックネームを入力してね">
+                <!-- 複数ファイル選択、画像のみ受け付け -->
                 <input type="file" id="imageInput" class="file-custom" multiple accept="image/*">
             </div>
+            <!-- 選択された画像のミニプレビュー表示エリア -->
             <div id="previewArea"></div>
             <button id="submitBtn" onclick="addPost()" class="submit-btn">
                 <span id="btnLoader" class="loader hidden"></span>
@@ -242,6 +316,7 @@
             </button>
         </div>
 
+        <!-- 投稿一覧のタイトルと再読み込みボタン -->
         <div class="post-list-header">
             <h3>✨ みんなのアイコンボード ✨</h3>
             <button id="refreshBtn" class="refresh-btn" onclick="fetchPosts()">
@@ -249,52 +324,105 @@
             </button>
         </div>
 
+        <!-- 投稿された内容が表示されるエリア -->
         <div id="postList" class="post-grid">
             <div id="loadingMessage" style="text-align: center; color: var(--pink-main); padding: 60px;">読み込み中...</div>
         </div>
     </div>
 
-    <script>
-        // --- 設定：GASのURLをここに貼り付けてください ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzKtK4jckh3vSCxhYHpfb5tZzEZ11nqraIAzHpzffckULtysONXfP3bGbfPapeo4s9X/exec"; 
+    <!-- プレビューモーダルの HTML 構造 -->
+    <div id="modalOverlay" class="modal-overlay" onclick="closePreview()">
+        <div class="profile-card" onclick="event.stopPropagation()">
+            <div class="card-header">
+                <button class="close-modal" onclick="closePreview()">×</button>
+            </div>
+            <div class="card-content">
+                <div class="preview-img-wrapper">
+                    <img id="previewImage" src="" class="preview-large">
+                </div>
+                <div id="previewName" class="preview-name"></div>
+                <div class="preview-status">プロフィール プレビュー ✨</div>
+                <button class="submit-btn" onclick="closePreview()">とじる</button>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        // --- 設定：GASのウェブアプリURLを指定してください ---
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzKtK4jckh3vSCxhYHpfb5tZzEZ11nqraIAzHpzffckULtysONXfP3bGbfPapeo4s9X/exec";
+
+        // 選択された画像のBase64データ保持用配列
         let selectedImages = [];
 
+        // ページ読み込み時に投稿データを取得
         window.onload = fetchPosts;
 
-        // 画像の圧縮とリサイズ
+        /**
+         * モーダルを表示する関数
+         * @param {string} src 画像のURL(Base64)
+         * @param {string} name 投稿者の名前
+         */
+        function openPreview(src, name) {
+            const overlay = document.getElementById('modalOverlay');
+            const img = document.getElementById('previewImage');
+            const nameEl = document.getElementById('previewName');
+
+            img.src = src;
+            nameEl.innerText = name || 'ななしさん';
+            overlay.classList.add('active'); // CSSで表示状態にする
+        }
+
+        /**
+         * モーダルを閉じる関数
+         */
+        function closePreview() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        /**
+         * 画像の圧縮とリサイズを行う関数
+         * @param {File} file 選択された画像ファイル
+         * @returns {Promise<string>} Base64文字列
+         */
         async function resizeImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(file); // 画像をデータURLとして読み込む
                 reader.onload = (e) => {
                     const img = new Image();
                     img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 200;
+                        const MAX_WIDTH = 200; // 横幅最大200pxに制限
                         const scale = MAX_WIDTH / img.width;
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scale;
                         const ctx = canvas.getContext('2d');
+                        // キャンバスに描画してリサイズ
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        // JPEG形式で圧縮（品質0.6）してデータURLを返却
                         resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
             });
         }
 
+        // ファイル選択時のイベントリスナー
         document.getElementById('imageInput').addEventListener('change', async (e) => {
             selectedImages = [];
-            const files = Array.from(e.target.files).slice(0, 5);
+            const files = Array.from(e.target.files).slice(0, 5); // 最大5枚まで
             for (const file of files) {
-                const base64 = await resizeImage(file);
+                const base64 = await resizeImage(file); // リサイズ処理
                 selectedImages.push(base64);
             }
+            // フォーム内にミニプレビューを表示
             const preview = document.getElementById('previewArea');
             preview.innerHTML = selectedImages.map(src => `<img src="${src}" class="preview-mini">`).join('');
         });
 
+        /**
+         * GASから投稿一覧を取得して表示を更新する関数
+         */
         async function fetchPosts() {
             if (!GAS_WEB_APP_URL) return;
 
@@ -302,7 +430,7 @@
             const refreshIcon = document.getElementById('refreshIcon');
             const refreshText = document.getElementById('refreshText');
 
-            // ローディング状態開始
+            // ローディング状態（ボタン無効化と回転開始）
             refreshBtn.disabled = true;
             refreshIcon.classList.add('spin');
             refreshText.innerText = '読み込み中...';
@@ -312,21 +440,24 @@
                 const posts = await res.json();
                 const list = document.getElementById('postList');
                 list.innerHTML = '';
-                
+
                 if (posts.length === 0) {
                     list.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">まだ投稿がありません</div>';
                 } else {
+                    // 最新の投稿を上に表示するため配列を逆順にする
                     [...posts].reverse().forEach(post => {
                         const div = document.createElement('div');
                         div.className = 'post-item';
-                        
+
                         let images = [];
                         try {
+                            // imagesフィールドがJSON文字列の場合はパースする
                             images = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
                         } catch(e) { console.error(e); }
 
                         const dateStr = post.date ? new Date(post.date).toLocaleString() : '';
-                        
+
+                        // 投稿アイテムのHTML組み立て。画像クリックでopenPreviewを呼び出す
                         div.innerHTML = `
                             <div class="post-header">
                                 <span class="post-name">${post.name || 'ななしさん'}</span>
@@ -336,14 +467,14 @@
                                 </div>
                             </div>
                             <div class="icons-wrapper">
-                                ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large">`).join('')}
+                                ${(Array.isArray(images) ? images : []).map(img => `<img src="${img}" class="icon-large" onclick="openPreview('${img}', '${post.name}')">`).join('')}
                             </div>
                         `;
                         list.appendChild(div);
                     });
                 }
-            } catch (e) { 
-                console.error(e); 
+            } catch (e) {
+                console.error(e);
                 const list = document.getElementById('postList');
                 list.innerHTML = '<div style="text-align:center; color:red; padding:20px;">読み込みに失敗しました</div>';
             } finally {
@@ -354,49 +485,59 @@
             }
         }
 
+        /**
+         * 新規投稿を送信する関数
+         */
         async function addPost() {
             const name = document.getElementById('userName').value;
             if (!name || !selectedImages.length) return alert("名前と画像を選んでね！");
-            
+
             const btn = document.getElementById('submitBtn');
             const loader = document.getElementById('btnLoader');
             btn.disabled = true;
             loader.classList.remove('hidden');
 
             try {
+                // POSTリクエストをGASに送信
                 await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'no-cors', // クロスオリジン回避
                     body: JSON.stringify({ name, images: JSON.stringify(selectedImages) })
                 });
+                // 送信完了後、少し待ってから画面をリロード
                 setTimeout(() => {
                     location.reload();
                 }, 1500);
-            } catch (e) { 
+            } catch (e) {
                 alert("送信に失敗しました");
                 btn.disabled = false;
                 loader.classList.add('hidden');
             }
         }
 
+        /**
+         * 指定されたIDの投稿を削除する関数
+         * @param {string} id 投稿の一意なID
+         */
         async function deletePost(id) {
             if (!id || id === "undefined") {
                 alert("この投稿はIDがないため削除できません。新しい投稿から試してください。");
                 return;
             }
             if (!confirm("この投稿を削除してもいいですか？")) return;
-            
+
             try {
+                // 削除アクションを指定してPOSTリクエスト
                 await fetch(GAS_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify({ action: 'delete', id: id })
                 });
                 alert("削除リクエストを送信しました！");
+                // 1.5秒後にリストを再取得
                 setTimeout(fetchPosts, 1500);
             } catch (e) { alert("削除に失敗しました"); }
         }
     </script>
 </body>
 </html>
-
